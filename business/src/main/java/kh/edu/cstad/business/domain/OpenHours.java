@@ -17,8 +17,8 @@ public class OpenHours {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Integer day;
-    private String start;
-    private String end;
+    private String startAt;
+    private String endAt;
     private Boolean isOvernight;
     private Boolean isOpenNow;
 }

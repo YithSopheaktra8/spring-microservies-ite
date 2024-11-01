@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: Config Server
+  profiles:
+    active: git
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/YithSopheaktra8/config-ms.git
+          default-label: master
+          search-paths: "/service/**"
+
+server:
+  port: 8071
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          config: TRACE
