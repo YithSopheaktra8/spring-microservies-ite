@@ -1,7 +1,7 @@
 package kh.edu.cstad.identity.init;
 
-import co.istad.authserver.service.JpaRegisteredClientRepository;
 import jakarta.annotation.PostConstruct;
+import kh.edu.cstad.identity.security.service.JpaRegisteredClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;

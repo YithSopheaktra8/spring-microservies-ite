@@ -1,10 +1,11 @@
 package kh.edu.cstad.identity.init;
 
-import co.istad.authserver.domain.Authority;
-import co.istad.authserver.domain.User;
-import co.istad.authserver.repository.AuthorityRepository;
-import co.istad.authserver.repository.UserRepository;
+
 import jakarta.annotation.PostConstruct;
+import kh.edu.cstad.identity.domain.Authority;
+import kh.edu.cstad.identity.domain.User;
+import kh.edu.cstad.identity.repository.UserRepository;
+import kh.edu.cstad.identity.security.repository.AuthorityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
