@@ -1,7 +1,15 @@
-  spring:
-    application:
-      name: business
-    profiles:
-      active: dev
-    config:
-      import: "optional:configserver:http://localhost:8071/"
+spring:
+  application:
+    name: business
+  profiles:
+    active: dev
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+server:
+  port: 8080
