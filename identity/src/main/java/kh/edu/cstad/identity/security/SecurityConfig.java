@@ -9,6 +9,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -41,15 +42,21 @@ public class SecurityConfig {
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(httpSecurity);
 
-        httpSecurity.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-                .oidc(Customizer.withDefaults());
-
         httpSecurity
                 .exceptionHandling(c ->
                         c.defaultAuthenticationEntryPointFor(
                                 new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         ));
+
+        httpSecurity
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+                /*.authorizationEndpoint(endpoint -> endpoint
+                        .consentPage("/oauth2/consent")
+                )*/
+                .oidc(Customizer.withDefaults());
 
         return httpSecurity.build();
     }
@@ -59,17 +66,21 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/test/public").permitAll()
-                .requestMatchers("/http://localhost:8080/login").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest()
+                .permitAll()
         );
 
-        httpSecurity.formLogin(Customizer.withDefaults());
-////    enable jwt security
-        httpSecurity.oauth2ResourceServer(oauthSecurity -> oauthSecurity.jwt(Customizer.withDefaults()));
-//        // disable csrf for submit form because we develop api
-        httpSecurity.csrf(token -> token.disable());
-//        // change from statefull to stateless because api use stateless
+       httpSecurity.oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(Customizer.withDefaults())
+        )
+                .formLogin(Customizer.withDefaults())
+                /*.formLogin(form -> form
+                        .loginPage("/oauth2/login")
+                        .usernameParameter("gp_account")
+                        .passwordParameter("gp_password")
+                )*/
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
     }

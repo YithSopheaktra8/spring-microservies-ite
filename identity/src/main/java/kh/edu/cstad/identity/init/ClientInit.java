@@ -29,7 +29,7 @@ public class ClientInit {
         TokenSettings tokenSettings = TokenSettings.builder()
                 .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
                 .accessTokenTimeToLive(Duration.ofDays(1))
-                .reuseRefreshTokens(true)
+                .reuseRefreshTokens(false)
                 .refreshTokenTimeToLive(Duration.ofDays(30))
                 .build();
 
@@ -40,15 +40,20 @@ public class ClientInit {
                 .build();
 
         RegisteredClient webClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("mobile")
+                .clientId("yelp")
                 .clientSecret(passwordEncoder.encode("password"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantTypes(grantTypes -> {
                     grantTypes.add(AuthorizationGrantType.AUTHORIZATION_CODE);
                     grantTypes.add(AuthorizationGrantType.REFRESH_TOKEN);
                 })
-                .redirectUri("http://localhost:3000/api/auth/callback")
-                //.postLogoutRedirectUri("http://127.0.0.1:8080/login")
+                .redirectUris(uris -> {
+                    uris.add("http://localhost:9090/login/oauth2/code/yelp");
+                        uris.add("http://localhost:8168/login/oauth2/code/yelp");
+                })
+                .postLogoutRedirectUris(uris -> {
+                    uris.add("http://localhost:8168");
+                })
                 .scopes(scope -> {
                     scope.add(OidcScopes.OPENID);
                     scope.add(OidcScopes.EMAIL);

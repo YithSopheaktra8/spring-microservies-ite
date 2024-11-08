@@ -1,19 +1,91 @@
+client-security-matchers: >
+  /login/**,
+  /oauth2/**,
+  /logout/**,
+  /en/**,
+  /auth/**,
+  /business/**,
+  /profile/**
+
+client-permit-matchers: >
+  /login/**,
+  /oauth2/**,
+  /en/**,
+  /auth/**,
+  /contactSupport/**,
+  /error/**,
+  /actuator/**,
+  /info/**,
+  /health/**,
+  /prometheus/**,
+  /business/**,
+  /profile/**
+
 spring:
-  profiles:
-    active: dev
+  security:
+    oauth2:
+      client:
+        provider:
+          yelp:
+            issuer-uri: http://localhost:9090
+        registration:
+          yelp:
+            provider: yelp
+            client-id: yelp
+            client-secret: password
+            authorization-grant-type:
+              - authorization_code
+            scope: openid, profile, email
+            redirect-uri: http://localhost:8168/login/oauth2/code/yelp
   application:
     name: gateway-server
   config:
     import: "configserver:"
   cloud:
     config:
-      uri: http://localhost:8071
+      uri: "http://127.0.0.1:8071"
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Request-Headers
+        - SaveSession
+      routes:
 
+        - id: business # Register Business Service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/business/**
+          filters:
+            - TokenRelay=
+            - RewritePath=/business/(?<segment>.*),/$\{segment}
+
+        - id: identity # Register Identity Service
+          uri: http://localhost:9090
+          predicates:
+            - Path=/identity/**
+          filters:
+            - TokenRelay=
+            - RewritePath=/identity/(?<segment>.*),/$\{segment}
+
+        - id: yelp-web-app # Register Frontend (NextJS)
+          uri: http://localhost:3000
+          predicates:
+            - Path=/**
+
+  profiles:
+    active: dev
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 
 management:
   endpoints:
@@ -21,9 +93,9 @@ management:
       exposure:
         include: "*"
   health:
-    livenessstate:
+    readiness-state:
       enabled: true
-    readinessstate:
+    liveness-state:
       enabled: true
   endpoint:
     gateway:
