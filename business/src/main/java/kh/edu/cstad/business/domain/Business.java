@@ -1,69 +1,104 @@
 package kh.edu.cstad.business.domain;
 
 import jakarta.persistence.*;
-import kh.edu.cstad.business.audit.Auditable;
-import lombok.AllArgsConstructor;
+import kh.edu.cstad.business.config.jpa.Auditable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
 @Getter
+@Setter
+@NoArgsConstructor
 @Entity
-@Table(name = "business")
-public class Business extends Auditable {
+@Table(name = "businesses")
+public class Business extends Auditable<String> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
+    @Column(unique = true, nullable = false)
     private String alias;
 
-    private String imageUrl;
+    @Column(unique = false, nullable = false) // change unique to false, easy to test create business without creating new user
+    private String username;    // username of business owner account
 
-    private String rating;
+    @Column(unique = true, nullable = false, columnDefinition = "TEXT")
+    private String brand;
 
-    private String price; // $, $$, $$$, $$$$
+    @Column(unique = true, columnDefinition = "TEXT")
+    private String customBrand;
 
-    private Integer reviewCount;
+    private String logo;
+    private String cover;
+    private String thumbnail;
 
-    private String phone;
+    @Column(columnDefinition = "TEXT")
+    private String about;
 
-    private String dateOpened;
+    @Column(unique = true, nullable = false, length = 30)
+    private String phoneNumber;
 
-    private String dateClosed;
+    @ManyToOne
+    private Country country;
 
-    private Boolean isClosed;
+    @ManyToOne
+    private City city;
 
-    private Boolean isClaimed;
+    @Column(columnDefinition = "TEXT")
+    private String address1;
+
+    @Column(columnDefinition = "TEXT")
+    private String address2;
+
+    @Column(columnDefinition = "TEXT")
+    private String address3;
+
+    private String stateOrProvince;
+
+    @Column(length = 32)
+    private String zipCode;
 
     private Boolean isOpening24Hours;
-    
-    @OneToMany
-    private List<Category> categories;
 
-    @OneToOne
-    private Coordinates coordinates;
+    //@Convert(converter = OpeningHourAttributeConverter.class) // old code hibernate older than 6
+    @JdbcTypeCode(SqlTypes.JSON) // new code hibernate greater than or equal 6 (Using Hibernate 6’s standard JSON mapping)
+    private List<OpeningHour> openingHours;
+
+    //@Convert(converter = AdditionalInformationAttributeConverter.class) // // old code hibernate older than 6
+    @JdbcTypeCode(SqlTypes.JSON) // new code hibernate greater than or equal 6 (Using Hibernate 6’s standard JSON mapping)
+    private List<AdditionalInformation> additionalInformation;
 
     @ManyToMany
-    @JoinTable(
-            name = "business_transactions",
-            joinColumns = @JoinColumn(name = "business_id"),
-            inverseJoinColumns = @JoinColumn(name = "transactions_id")
-    )
-    private List<Transactions> transactions; // pickup, delivery and restaurant_reservation.
+    @JoinTable(name = "businesses_categories",
+            joinColumns = @JoinColumn(name = "business_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"))
+    private List<Category> categories;
 
-    @OneToOne
-    private Location location;
+    @Column(unique = true, length = 150)
+    private String website;
 
-    @OneToMany
-    private List<OpenHours> openHours; // list of open hours for each day of the week.
+    @Column(unique = true, nullable = false, length = 100)
+    private String email;
 
+    private Boolean isClaimed;
+    private Boolean isClosed;
+    private Boolean isApproved;
+    private Boolean isSearchable;
 
+    private Double latitude;
+    private Double longitude;
+    private String googleMap;
 
+    private String price;
+
+    @ManyToMany
+    @JoinTable(name = "businesses_transactions",
+            joinColumns = @JoinColumn(name = "business_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "transaction_id", referencedColumnName = "id"))
+    private List<Transaction> transactions;
 }

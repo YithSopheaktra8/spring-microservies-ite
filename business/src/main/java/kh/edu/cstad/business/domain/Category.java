@@ -1,20 +1,26 @@
 package kh.edu.cstad.business.domain;
 
 import jakarta.persistence.*;
-import kh.edu.cstad.business.audit.Auditable;
-import lombok.Data;
+import kh.edu.cstad.business.config.jpa.Auditable;
+import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
-@Table(name = "category")
-@Data
-public class Category extends Auditable {
+@Table(name = "categories")
+public class Category extends Auditable<String> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    private String title;
+    @Column(unique = true, nullable = false, length = 60)
+    private String name;
 
-    @Column(unique = true, nullable = false,length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String alias;
 
     @Column(columnDefinition = "TEXT")
